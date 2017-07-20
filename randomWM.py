@@ -24,6 +24,7 @@ def generate_disk(N,h=200,H=3000):
 
     # make random z distribution given scale height h
     z = h*np.log(np.random.rand(N))
+    #z = h*2*np.arctan(np.tanh(0.5*np.random.rand(N)))/(0.5*np.pi) # if the distribution is sech(x/h) instead of exp(-x/h)
     z *= (-1)**np.random.randint(0,2,N) # above or below disk
 
     return np.c_[x,y,z]

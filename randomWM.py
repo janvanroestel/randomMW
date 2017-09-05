@@ -9,25 +9,41 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
-def generate_disk(N,h=200,H=3000):
-    # generate a simple disk
+def generate_disk(N,h=200,H=3000,maxdist=10**9):
+    scale = 1
+    
+    # generate a simple dist
 
     # generate distances from the core, according to exponential with scale dist H
-    r = H*(-1*lambertw(((np.random.rand(N)-1)*np.e**-1),-1).real-1)
+    # the distribution of r is according to x*exp(-x/h) (because 2D)
+    if maxdist < 8300:
+        cendist = coord.Galactocentric.galcen_distance.value*1000-maxdist
+        minval = (H-np.exp(-cendist/H)*(H+cendist))/H
+        r = H*(-1*lambertw(((np.random.rand(N)-1)*np.e**-1),-1).real-1)
+        scale /= minval
+        print 1./minval
+    else:
+        r = H*(-1*lambertw(((np.random.rand(N)-1)*np.e**-1),-1).real-1)
 
     # radial distribution
-    theta = np.random.uniform(0,2*np.pi,N)
+    if maxdist < 8300:
+        theta = np.random.uniform(np.pi,2*np.pi,N)
+    else:
+        t = np.tan(maxdist/(coord.Galactocentric.galcen_distance.value*1000))
+        theta = np.random.uniform(0+t,2*np.pi-t,N)
+        print np.pi/t
+        scale *= (np.pi/t)
 
     # make x,y
-    x = r*np.cos(theta)
-    y = r*np.sin(theta)
+    x = r*np.sin(theta)
+    y = r*np.cos(theta)
 
     # make random z distribution given scale height h
     z = h*np.log(np.random.rand(N))
     #z = h*2*np.arctan(np.tanh(0.5*np.random.rand(N)))/(0.5*np.pi) # if the distribution is sech(x/h) instead of exp(-x/h)
     z *= (-1)**np.random.randint(0,2,N) # above or below disk
 
-    return np.c_[x,y,z]
+    return np.c_[x,y,z],scale
 
 
 
